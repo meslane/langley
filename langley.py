@@ -17,6 +17,10 @@ with open('vars.txt') as f:
     vars = f.read().splitlines()
     
 '''
+Tokens file line designations:
+0: Discord api key
+1: Backpack.tf api key
+
 Vars file line designations:
 0: SCP Series number 
 '''
