@@ -29,9 +29,9 @@ client = Bot(command_prefix = ">")
 
 #helper functions
 def cleanhtml(raw): #remove tags from an HTML dump
-  cleanr = re.compile('<.*?>')
-  cleantext = re.sub(cleanr, '', raw)
-  return cleantext
+    cleanr = re.compile('<.*?>')
+    cleantext = re.sub(cleanr, '', raw)
+    return cleantext
   
 def split_on(source, o_string, c_string): #give text between two parts of a string
     return str(source.split(o_string,1)[1].split(c_string,1)[0])
@@ -126,6 +126,25 @@ async def status(ctx):
         await client.say("blah")
     else:
         await client.say("getting a bit nosey, are we?")
+        
+@client.command()
+async def tf2currencies():
+    try:
+        url = "https://backpack.tf/api/IGetCurrencies/v1?key=" + str(tokens[1])
+        
+        page = urlopen(url).read()
+        data = json.loads(page)
+        
+        metal = str(data["response"]["currencies"]["metal"]["price"]["value"])
+        key = str(data["response"]["currencies"]["keys"]["price"]["value"])
+        buds = str(data["response"]["currencies"]["earbuds"]["price"]["value"])
+        
+        await client.say("**Latest TF2 Currency Values:**")
+        await client.say("**Refined Metal (ref):** {0} usd".format(metal))
+        await client.say("**Mann Co. Supply Crate Key:** {0} ref".format(key))
+        await client.say("**Earbuds (buds):** {0} keys".format(buds))
+    except json.decoder.JSONDecodeError:
+        await client.say("Unable to fetch currency values")
 
 @client.command(pass_context = True)
 async def tf2price(ctx, quality):
@@ -164,11 +183,9 @@ async def tf2price(ctx, quality):
         page = urlopen(url).read()
         data = json.loads(page)
     
-        prices = str(data["response"]["history"][-1]).replace("'", "")
-    
-        low  = split_on(prices, "value: ", ",")
-        high = split_on(prices, "value_high: ", ",")
-        currency = split_on(prices, "currency: ", ",")
+        low  = str(data["response"]["history"][-1]["value"])
+        high = str(data["response"]["history"][-1]["value_high"])
+        currency = str(data["response"]["history"][-1]["currency"])
     
         await client.say("**{0} - {1} {2}**".format(low, high, currency))
     except json.decoder.JSONDecodeError:
