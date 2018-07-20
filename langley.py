@@ -6,6 +6,7 @@ import urllib.error
 from urllib.request import urlopen
 import discord
 from discord.ext.commands import Bot
+from googletrans import Translator
 
 with open('tokens.txt') as f:
     tokens = f.read().splitlines()
@@ -53,10 +54,31 @@ async def ask():
     await client.say(answer(rand.randint(1,6)))
     
 @client.command(pass_context = True)
-async def e(ctx):
+async def comptrans(ctx, *, input):
+    translator = Translator()
+    english  = translator.translate(input, dest = 'en')
+    mandarin = translator.translate(input, dest = 'zh-tw')
+    hindi    = translator.translate(input, dest = 'hi') 
+    spanish  = translator.translate(input, dest = 'es')
+    arabic   = translator.translate(input, dest = 'ar')
+    malay    = translator.translate(input, dest = 'ms')
+    swahili  = translator.translate(input, dest = 'sw')
+    await client.say(
+    """```py
+English:    "{0}"
+Mandarin:   "{1}"
+Hindustani: "{2}"
+Spanish:    "{3}"
+Arabic:     "{4}"
+Malay:      "{5}"      
+Swahili:    "{6}" 
+```""".format(english.text, mandarin.pronunciation, hindi.pronunciation, spanish.text, arabic.pronunciation, malay.text, swahili.text))
+    
+@client.command(pass_context = True)
+async def evaluate(ctx, *, input):
     if str(ctx.message.author) in admin_list:
         try:
-            result = str(eval(str(ctx.message.content[3:])))
+            result = str(eval(input))
             await client.say('`' + result + '`')
         except Exception as e:
             await client.say('`' + 'Error: ' + str(e) + '`')
@@ -75,6 +97,15 @@ async def kill(ctx):
         exit()
     else:
         await client.say("you can't kill me you pathetic fleshling!")
+        
+@client.command(pass_context = True)
+async def listservers(ctx):
+    if str(ctx.message.author) in admin_list:
+        await client.say("List of servers where I am a member:")
+        for server in client.servers:
+            await client.say("**{0}**".format(server.name))
+    else:
+        await client.say("getting a bit nosey, are we?")
     
 @client.command()
 async def random(low, high):
@@ -83,6 +114,24 @@ async def random(low, high):
         await client.say(answer)
     except ValueError:
         await client.say("I need numbers, dingbat")
+        
+@client.command(pass_context = True)
+async def rps(ctx, usr_choice):
+    choices = {
+    "rock"     :0,
+    "paper"    :1, 
+    "scissors" :2 
+    }
+    usr_choice = choices.get(str(usr_choice))
+    bot_choice = random.randint(0, 2) 
+    outcome = usr_choice - bot_choice
+    if outcome == 0:
+        result = "tie"
+    elif outcome == -1 or outcome == 2:
+        result = "loss"
+    else:
+        result = "win"
+    
         
 @client.command()
 async def scp(num):
@@ -188,7 +237,7 @@ async def tf2price(ctx, quality):
         currency = str(data["response"]["history"][-1]["currency"])
     
         await client.say("**{0} - {1} {2}**".format(low, high, currency))
-    except json.decoder.JSONDecodeError:
+    except (json.decoder.JSONDecodeError, IndexError):
         await client.say("Unable to fetch item prices. Item may not exist or may not posess the item quality desired. Please ensure that the item's name and quality are correct.")
 
     
